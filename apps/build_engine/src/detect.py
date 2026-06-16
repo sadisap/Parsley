@@ -1,4 +1,4 @@
-# # what framework it is (React, Express, FastAPI, Flask, static)
+# what framework it is (React, Express, FastAPI, Flask, static)
 # what port it runs on
 # what the start command is
 
@@ -6,29 +6,31 @@ import json
 import re
 from pathlib import Path
 
-
 SUPPORTED_FRAMEWORKS = {"react", "express", "fastapi", "flask", "static"}
 
-STATIC_EXTENSIONS = {".html", ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf"}
+STATIC_EXTENSIONS = {
+    ".html", ".css", ".js", ".png", ".jpg", ".jpeg", ".gif",
+    ".svg", ".ico", ".woff", ".woff2", ".ttf"
+}
 
 DEFAULT_PORTS = {
-    "react":   5173,
+    "react": 5173,
     "express": 3000,
     "fastapi": 8000,
-    "flask":   5000,
-    "static":  80,
+    "flask": 5000,
+    "static": 80,
 }
 
 DEFAULT_COMMANDS = {
-    "react":   {"build": "npm run build",                                  "start": "npm run preview"},
-    "express": {"build": None,                                             "start": "node index.js"},
-    "fastapi": {"build": None,                                             "start": "uvicorn main:app --host 0.0.0.0 --port 8000"},
-    "flask":   {"build": None,                                             "start": "flask run --host 0.0.0.0 --port 5000"},
-    "static":  {"build": None,                                             "start": None},
+    "react": {"build": "npm run build", "start": "npm run preview"},
+    "express": {"build": None, "start": "node index.js"},
+    "fastapi": {"build": None, "start": "uvicorn main:app --host 0.0.0.0 --port 8000"},
+    "flask": {"build": None, "start": "flask run --host 0.0.0.0 --port 5000"},
+    "static": {"build": None, "start": None},
 }
 
 
-# 1: detect framework 
+# 1: detect framework
 
 def _detect_framework(repo: Path) -> str:
     pkg = repo / "package.json"
@@ -56,11 +58,24 @@ def _detect_framework(repo: Path) -> str:
         except OSError as e:
             raise ValueError(f"Could not read requirements.txt: {e}")
 
-        # matches"fastapi" or "fastapi==..." as a line start to avoid false positives
+        # matches "fastapi" or "fastapi==..." as a line start to avoid false positives
         if re.search(r"^fastapi([=<>!;\s]|$)", contents, re.MULTILINE):
             return "fastapi"
         if re.search(r"^flask([=<>!;\s]|$)", contents, re.MULTILINE):
             return "flask"
+
+    # fallback: inspect Python source files directly
+    for py_file in repo.rglob("*.py"):
+        try:
+            text = py_file.read_text(encoding="utf-8", errors="ignore").lower()
+        except OSError:
+            continue
+
+        if "from flask import" in text or "flask(__name__)" in text:
+            return "flask"
+
+        if "from fastapi import" in text or "fastapi()" in text:
+            return "fastapi"
 
     # fallback: all root-level files are static assets
     root_files = [f for f in repo.iterdir() if f.is_file()]
@@ -70,7 +85,7 @@ def _detect_framework(repo: Path) -> str:
     raise ValueError("Framework not supported")
 
 
-#  2: detect port 
+# 2: detect port
 
 def _detect_port(repo: Path, framework: str) -> int:
     if framework == "express":
@@ -106,7 +121,8 @@ def _scan_python_port(repo: Path, framework: str) -> int:
     return DEFAULT_PORTS[framework]
 
 
-# 3: detect start and build commands 
+# 3: detect start and build commands
+
 def _detect_commands(repo: Path, framework: str) -> dict[str, str | None]:
     defaults = DEFAULT_COMMANDS[framework]
 
@@ -123,8 +139,8 @@ def _detect_commands(repo: Path, framework: str) -> dict[str, str | None]:
     except (json.JSONDecodeError, OSError):
         return {"build": defaults["build"], "start": defaults["start"]}
 
-    build_cmd = f"npm run build" if "build" in scripts else defaults["build"]
-    start_cmd = f"npm run start" if "start" in scripts else defaults["start"]
+    build_cmd = "npm run build" if "build" in scripts else defaults["build"]
+    start_cmd = "npm run start" if "start" in scripts else defaults["start"]
 
     return {"build": build_cmd, "start": start_cmd}
 
@@ -159,8 +175,8 @@ def detect(repo_path: str | Path) -> dict:
     commands = _detect_commands(repo, framework)
 
     return {
-        "framework":     framework,
-        "port":          port,
+        "framework": framework,
+        "port": port,
         "start_command": commands["start"],
         "build_command": commands["build"],
     }
