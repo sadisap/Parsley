@@ -28,4 +28,3 @@ def clone_repo(project_id: str, repo_url: str) -> Path:
 
     return dest
 
-clone_repo("test1", "https://github.com/BStok/OA-Postmortem")
