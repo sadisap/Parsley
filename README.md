@@ -14,7 +14,7 @@ On every push to your main branch, Parsley picks up the GitHub webhook, rebuilds
 
 ## Supported Stacks [Initial Version]
 
-React · Express · FastAPI · Flask · Static HTML
+React · Express · FastAPI · Flask · Static HTML · Django · Next.js · Nuxt.js · Vue
 
 ---
 
