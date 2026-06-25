@@ -5,8 +5,7 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
-from src.db.models import Project, User
-
+from apps.api.src.db.models import Project, User
 
 def create_user(db_session: Session, *, username: str = 'alice') -> User:
     user = User(

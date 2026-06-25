@@ -10,15 +10,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-API_ROOT = Path(__file__).resolve().parents[1]
-if str(API_ROOT) not in sys.path:
-    sys.path.insert(0, str(API_ROOT))
-
-from src.db.database import get_db  # noqa: E402
-from src.db.models import Base, User  # noqa: E402
-from src.lib.auth import get_current_user  # noqa: E402
-from src.routes.projects import router as projects_router  # noqa: E402
-from tests._helpers import create_user  # noqa: E402
+from apps.api.src.db.database import get_db
+from apps.api.src.db.models import Base, User
+from apps.api.src.lib.auth import get_current_user
+from apps.api.src.routes.projects import router as projects_router
+from apps.api.tests._helpers import create_user
 
 
 @pytest.fixture()

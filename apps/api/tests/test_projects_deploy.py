@@ -5,9 +5,9 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from src.db.models import Project
-from src.routes import projects as projects_route
-from tests._helpers import create_project_record
+from apps.api.src.db.models import Project
+from apps.api.src.routes import projects as projects_route
+from apps.api.tests._helpers import create_project_record
 
 
 def test_create_project_returns_pending_and_persists(client, db_session: Session, current_user) -> None:

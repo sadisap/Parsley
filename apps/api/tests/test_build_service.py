@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from src.services import build_service
+from apps.api.src.services import build_service
 
 
 class DummyProject(SimpleNamespace):
