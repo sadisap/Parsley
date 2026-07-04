@@ -10,7 +10,7 @@ COPY . .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r apps/api/requirements.txt
-RUN pip install bcrypt==4.0.1
+RUN pip install bcrypt==4.0.1 "uvicorn[standard]"
 # Expose port
 EXPOSE 8000
 
