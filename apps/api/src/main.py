@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from apps.api.src.db.database import init_db
 from apps.api.src.lib.auth import router as auth_router
 from apps.api.src.routes.projects import router as projects_router
@@ -20,6 +20,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Parsley",
     lifespan=lifespan
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router)
