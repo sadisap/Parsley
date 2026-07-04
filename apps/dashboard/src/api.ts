@@ -28,24 +28,14 @@ export const api = {
     req<{ message: string }>("POST", "/auth/register", { username, password }),
 
   login: async (username: string, password: string): Promise<string> => {
-    const form = new URLSearchParams({ username, password });
-    const res = await fetch(`${BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: form,
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail ?? "Login failed");
-    }
-    const data = await res.json();
-    return data.access_token;
-  },
+  const data = await req<{ access_token: string }>("POST", "/auth/login", { username, password });
+  return data.access_token;
+},
 
   projects: {
-    list: () => req<Project[]>("GET", "/projects/"),
+    list: () => req<Project[]>("GET", "/projects"),
     create: (name: string, repo_url: string) =>
-      req<Project>("POST", "/projects/", { name, repo_url }),
+      req<Project>("POST", "/projects", { name, repo_url }),
     deploy: (id: string) =>
       req<{ build_id: string }>("POST", `/projects/${id}/deploy`),
   },
