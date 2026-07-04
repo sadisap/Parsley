@@ -18,4 +18,5 @@ __pycache__/
 .env
 *.egg-info/
 dist/
-build/
+build/node_modules/
+apps/dashboard/dist/
