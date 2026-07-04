@@ -66,7 +66,7 @@ def run_container(
 
     label_flags = ""
     if labels:
-        label_flags = " ".join(labels)
+        label_flags = " ".join(labels) if labels else ""
 
     cmd = (
         f"docker run -d --name {container_name} "
