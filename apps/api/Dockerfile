@@ -1,18 +1,19 @@
-# apps/api/Dockerfile
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    openssh-client \
+    && curl -fsSL https://get.docker.com | sh \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the whole repo so internal imports work
 COPY . .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r apps/api/requirements.txt
-RUN pip install bcrypt==4.0.1 "uvicorn[standard]"
-# Expose port
+RUN pip install --no-cache-dir -r apps/api/requirements.txt && \
+    pip install bcrypt==4.0.1 "uvicorn[standard]"
+
 EXPOSE 8000
 
-# Run the API
 CMD ["uvicorn", "apps.api.src.main:app", "--host", "0.0.0.0", "--port", "8000"]
