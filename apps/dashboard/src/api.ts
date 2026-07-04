@@ -1,5 +1,4 @@
-const BASE = "http://187.127.175.133:8000";
-
+const BASE = "https://api.parsley.website";
 function token() {
   return localStorage.getItem("token");
 }
