@@ -22,6 +22,62 @@ class CreateProjectBody(BaseModel):
     repo_url: str
 
 
+class EnvVarsBody(BaseModel):
+    env_vars: dict
+
+
+@router.get("/")
+def list_projects(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    projects = db.query(Project).filter(Project.user_id == current_user.user_id).all()
+    return [
+        {
+            "project_id": p.project_id,
+            "name": p.name,
+            "repo_url": p.repo_url,
+            "subdomain": p.subdomain,
+            "status": p.status,
+            "framework": p.framework,
+        }
+        for p in projects
+    ]
+
+
+@router.get("/{project_id}/env")
+def get_env(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = db.query(Project).filter(
+        Project.project_id == project_id,
+        Project.user_id == current_user.user_id,
+    ).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project.env_vars or {}
+
+
+@router.put("/{project_id}/env")
+def set_env(
+    project_id: str,
+    body: EnvVarsBody,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = db.query(Project).filter(
+        Project.project_id == project_id,
+        Project.user_id == current_user.user_id,
+    ).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    project.env_vars = body.env_vars
+    db.commit()
+    return project.env_vars
+
+
 @router.post("/")
 def create_project(
     body: CreateProjectBody,
@@ -109,6 +165,7 @@ def deploy_project(
                 subdomain=project_record.subdomain,
                 image_tag=result["image_tag"],
                 port=result["port"],
+                env_vars=project_record.env_vars or {},
             )
 
             deployment = Deployment(

@@ -10,6 +10,7 @@ def deploy_to_vps(
     subdomain: str,
     image_tag: str,
     port: int,
+    env_vars: dict = None,
 ) -> str:
     """
     SSHes into VPS, pulls the image, and runs it with Traefik labels.
@@ -35,6 +36,7 @@ def deploy_to_vps(
         image_tag=image_tag,
         container_name=container_name,
         labels=labels,
+        env_vars=env_vars or {},
     )
 
     ssh = paramiko.SSHClient()

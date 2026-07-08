@@ -7,13 +7,22 @@ build_logs: dict[str, list[str]] = defaultdict(list)
 # listeners: build_id -> list of asyncio queues waiting for new lines
 build_listeners: dict[str, list[asyncio.Queue]] = defaultdict(list)
 
+_main_loop = None
+
+
+def init_loop() -> None:
+    global _main_loop
+    _main_loop = asyncio.get_event_loop()
+
 
 def append_log(build_id: str, line: str) -> None:
     """Called by the build thread to add a new log line."""
     build_logs[build_id].append(line)
-    # notify all waiting WebSocket clients
     for queue in build_listeners[build_id]:
-        queue.put_nowait(line)
+        if _main_loop is not None and _main_loop.is_running():
+            _main_loop.call_soon_threadsafe(queue.put_nowait, line)
+        else:
+            queue.put_nowait(line)
 
 
 def get_logs(build_id: str) -> list[str]:

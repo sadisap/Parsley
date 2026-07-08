@@ -241,7 +241,7 @@ def build(
         rendered, port, build_command, start_command = _render_template(template_text, framework, detection)
         (build_dir / "Dockerfile").write_text(rendered, encoding="utf-8")
 
-        for line in _run_stream(["docker", "build", "-t", image, "."], cwd=build_dir):
+        for line in _run_stream(["docker", "build", "--platform", "linux/amd64", "-t", image, "."], cwd=build_dir):
             if log_callback:
                 log_callback(line)
         # _run(["docker", "build", "-t", image, "."], cwd=build_dir)

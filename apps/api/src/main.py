@@ -1,7 +1,11 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from apps.api.src.db.database import init_db
+from datetime import datetime
+from apps.api.src.db.database import init_db, SessionLocal
+from apps.api.src.db.models import Build, Project
+from apps.api.src.lib.log_store import init_loop
 from apps.api.src.lib.auth import router as auth_router
 from apps.api.src.routes.projects import router as projects_router
 from apps.api.src.routes.builds import router as builds_router
@@ -10,9 +14,26 @@ from apps.api.src.routes.logs import router as logs_router
 from apps.api.src.routes.webhook import router as webhook_router
 from apps.api.src.services.webhook_adapter import DBWebhookAdapter
 
+def _cleanup_stuck_builds():
+    db = SessionLocal()
+    try:
+        stuck_builds = db.query(Build).filter(Build.status.in_(["building", "queued"])).all()
+        for build in stuck_builds:
+            build.status = "failed"
+            build.finished_at = datetime.utcnow()
+        stuck_projects = db.query(Project).filter(Project.status == "building").all()
+        for project in stuck_projects:
+            project.status = "failed"
+        db.commit()
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_loop()
     init_db()
+    _cleanup_stuck_builds()
     app.state.webhook_adapter = DBWebhookAdapter()
     yield
 
@@ -20,6 +41,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Parsley",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router)
