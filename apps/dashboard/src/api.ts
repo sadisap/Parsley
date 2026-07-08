@@ -48,6 +48,10 @@ export const api = {
       req<Project>("POST", "/projects", { name, repo_url }),
     deploy: (id: string) =>
       req<{ build_id: string }>("POST", `/projects/${id}/deploy`),
+    getEnv: (id: string) =>
+      req<Record<string, string>>("GET", `/projects/${id}/env`),
+    setEnv: (id: string, env_vars: Record<string, string>) =>
+      req<Record<string, string>>("PUT", `/projects/${id}/env`, { env_vars }),
   },
 
   builds: {

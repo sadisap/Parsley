@@ -82,10 +82,16 @@ def start_build_and_deploy(project_id: str) -> str:
 
         except Exception as e:
             print(f"BUILD THREAD ERROR: {e}")
-            build_record.status = "failed"
-            build_record.finished_at = datetime.utcnow()
-            project_record.status = "failed"
-            db2.commit()
+            try:
+                if build_record:
+                    build_record.status = "failed"
+                    build_record.finished_at = datetime.utcnow()
+                if project_record:
+                    project_record.status = "failed"
+                db2.commit()
+            except Exception as inner:
+                print(f"BUILD THREAD CLEANUP ERROR: {inner}")
+                db2.rollback()
             append_log(build_id, f"ERROR: {e}")
 
         finally:

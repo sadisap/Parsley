@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 import uuid
@@ -32,6 +32,7 @@ class Project(Base):
     start_command = Column(String)
     subdomain     = Column(String, unique=True)
     status        = Column(String, default="pending")
+    env_vars      = Column(JSON, default=dict, nullable=False, server_default="{}")
     created_at    = Column(DateTime, default=datetime.utcnow)
     updated_at    = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

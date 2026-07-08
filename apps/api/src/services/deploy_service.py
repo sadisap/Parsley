@@ -10,6 +10,7 @@ def deploy_to_vps(
     subdomain: str,
     image_tag: str,
     port: int,
+    env_vars: dict = None,
 ) -> str:
     """
     Builds Traefik labels and calls redeploy() from container.py.
@@ -32,6 +33,7 @@ def deploy_to_vps(
         container_name=container_name,
         port=port,
         labels=labels,
+        env_vars=env_vars or {},
     )
 
     return container_name

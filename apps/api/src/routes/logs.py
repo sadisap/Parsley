@@ -1,8 +1,8 @@
 # apps/api/src/routes/logs.py
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from apps.api.src.lib.log_store import get_logs, subscribe, unsubscribe
-from apps.api.src.db.database import get_db
+from apps.api.src.lib.log_store import get_logs
+from apps.api.src.db.database import SessionLocal
 from apps.api.src.db.models import Build
 import asyncio
 
@@ -13,43 +13,44 @@ router = APIRouter(tags=["logs"])
 async def stream_build_logs(websocket: WebSocket, build_id: str):
     await websocket.accept()
 
-    db = next(get_db())
-    build = db.query(Build).filter(Build.build_id == build_id).first()
-
-    if not build:
-        await websocket.send_text("Build not found")
-        await websocket.close()
-        return
-
-    # send existing lines first so late joiners catch up
-    for line in get_logs(build_id):
-        await websocket.send_text(line)
-
-    # if build already finished, close immediately
-    if build.status in ("success", "failed"):
-        await websocket.send_text("__done__")
-        await websocket.close()
-        return
-
-    # subscribe to new lines as they arrive
-    queue = subscribe(build_id)
-
+    db = SessionLocal()
     try:
+        build = db.query(Build).filter(Build.build_id == build_id).first()
+        if not build:
+            await websocket.send_text("Build not found")
+            await websocket.close()
+            return
+
+        sent = 0
+
+        # send any lines already in the store
+        existing = get_logs(build_id)
+        for line in existing:
+            await websocket.send_text(line)
+        sent = len(existing)
+
+        # if already finished, close immediately
+        if build.status in ("success", "failed"):
+            await websocket.send_text("__done__")
+            return
+
+        # poll every 0.5s for new lines and build completion
         while True:
-            try:
-                line = await asyncio.wait_for(queue.get(), timeout=30)
-                if line == "__done__":
-                    await websocket.send_text("__done__")
-                    break
+            await asyncio.sleep(0.5)
+
+            all_lines = get_logs(build_id)
+            for line in all_lines[sent:]:
                 await websocket.send_text(line)
-            except asyncio.TimeoutError:
-                # send a keepalive ping so connection doesn't drop
-                await websocket.send_text("__ping__")
+            sent = len(all_lines)
+
+            db.refresh(build)
+            if build.status in ("success", "failed"):
+                await websocket.send_text("__done__")
+                break
 
     except WebSocketDisconnect:
         pass
     finally:
-        unsubscribe(build_id, queue)
         db.close()
 
 

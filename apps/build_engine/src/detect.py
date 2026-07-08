@@ -288,6 +288,22 @@ def _find_express_entry(repo: Path) -> str | None:
     return None
 
 
+def _js_build_command(scripts: dict, deps: set) -> str:
+    """Pick the right build command for any JS project without downloading tools."""
+    if "build" in scripts:
+        return "npm run build"
+    for tool, cmd in [
+        ("vite", "./node_modules/.bin/vite build"),
+        ("react-scripts", "./node_modules/.bin/react-scripts build"),
+        ("webpack", "./node_modules/.bin/webpack"),
+        ("parcel", "./node_modules/.bin/parcel build"),
+        ("rollup", "./node_modules/.bin/rollup -c"),
+    ]:
+        if tool in deps:
+            return cmd
+    return "npm run build"
+
+
 def _detect_commands(repo: Path, framework: str, port: int) -> dict[str, str | None]:
     defaults = DEFAULT_COMMANDS[framework]
 
@@ -309,12 +325,14 @@ def _detect_commands(repo: Path, framework: str, port: int) -> dict[str, str | N
     scripts = _dict_section(pkg, "scripts") if pkg is not None else {}
 
     if framework == "react":
-        build = "npm run build" if "build" in scripts else "vite build"
+        deps = _dependency_names(pkg) if pkg else set()
+        build = _js_build_command(scripts, deps)
         start = "npm run preview" if "preview" in scripts else ("npm run start" if "start" in scripts else defaults["start"])
         return {"build": build, "start": start}
 
     if framework == "vue":
-        build = "npm run build" if "build" in scripts else "vite build"
+        deps = _dependency_names(pkg) if pkg else set()
+        build = _js_build_command(scripts, deps)
         if "preview" in scripts:
             start = "npm run preview"
         elif "start" in scripts:
@@ -324,13 +342,13 @@ def _detect_commands(repo: Path, framework: str, port: int) -> dict[str, str | N
         return {"build": build, "start": start}
 
     if framework == "next":
-        build = "npm run build" if "build" in scripts else "npx next build"
-        start = "npm run start" if "start" in scripts else f"npx next start -p {port} -H 0.0.0.0"
+        build = "npm run build" if "build" in scripts else "./node_modules/.bin/next build"
+        start = "npm run start" if "start" in scripts else f"./node_modules/.bin/next start -p {port} -H 0.0.0.0"
         return {"build": build, "start": start}
 
     if framework == "nuxt":
-        build = "npm run build" if "build" in scripts else "npx nuxi build"
-        start = "npm run start" if "start" in scripts else f"npx nuxi preview --host 0.0.0.0 --port {port}"
+        build = "npm run build" if "build" in scripts else "./node_modules/.bin/nuxi build"
+        start = "npm run start" if "start" in scripts else f"./node_modules/.bin/nuxi preview --host 0.0.0.0 --port {port}"
         return {"build": build, "start": start}
 
     if framework == "express":
