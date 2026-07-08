@@ -20,3 +20,5 @@ __pycache__/
 dist/
 build/node_modules/
 apps/dashboard/dist/
+
+apps/dashboard/node_modules/

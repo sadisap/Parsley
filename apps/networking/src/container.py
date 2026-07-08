@@ -52,6 +52,7 @@ def run_container(
     container_name: str,
     port: int,
     env_vars: dict[str, str] | None = None,
+    labels: list[str] | None = None,
 ) -> str:
     """
     Pull an image and start it as a detached container on the VPS.
@@ -63,10 +64,14 @@ def run_container(
     if env_vars:
         env_flags = " ".join(f'-e {k}="{v}"' for k, v in env_vars.items())
 
+    label_flags = ""
+    if labels:
+        label_flags = " ".join(labels) if labels else ""
+
     cmd = (
         f"docker run -d --name {container_name} "
         f"--network traefik-net --restart unless-stopped "
-        f"-p {port}:{port} {env_flags} {image}"
+        f"{label_flags} {env_flags} {image}"
     )
 
     container_id = _run_remote(client, cmd)
@@ -89,6 +94,7 @@ def redeploy(
     container_name: str,
     port: int,
     env_vars: dict[str, str] | None = None,
+    labels: list[str] | None = None,
 ) -> str:
     """
     Deploy a new container on the VPS with automatic rollback.
@@ -125,6 +131,7 @@ def redeploy(
                 container_name=container_name,
                 port=port,
                 env_vars=env_vars,
+                labels=labels,
             )
         except Exception:
             # new container failed to even start — restore old immediately

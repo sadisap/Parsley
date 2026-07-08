@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, Build, Deployment, Project } from "../api";
 
-const WS_BASE = "ws://localhost:8000";
+const WS_BASE = "wss://api.parsley.website";
 
 const STATUS_COLOR: Record<string, string> = {
   running: "var(--green)",

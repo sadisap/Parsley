@@ -1,11 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from datetime import datetime
-from apps.api.src.db.database import init_db, SessionLocal
-from apps.api.src.db.models import Build, Project
-from apps.api.src.lib.log_store import init_loop
+from apps.api.src.db.database import init_db
 from apps.api.src.lib.auth import router as auth_router
 from apps.api.src.routes.projects import router as projects_router
 from apps.api.src.routes.builds import router as builds_router
@@ -43,9 +39,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "https://app.parsley.website"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
