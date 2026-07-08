@@ -142,7 +142,8 @@ def redeploy(
 
         # wait for health check
         healthy = wait_for_health(
-            host=os.getenv("VPS_HOST"),
+            host=container_name,
+            # host=os.getenv("VPS_HOST"),
             port=port,
             timeout=10,
         )
