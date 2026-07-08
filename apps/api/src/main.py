@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apps.api.src.db.database import init_db
+from apps.api.src.db.database import init_db, SessionLocal
+from apps.api.src.db.models import Build, Project
+from datetime import datetime
 from apps.api.src.lib.auth import router as auth_router
 from apps.api.src.routes.projects import router as projects_router
 from apps.api.src.routes.builds import router as builds_router
