@@ -43,7 +43,7 @@ export const api = {
 },
 
   projects: {
-    list: () => req<Project[]>("GET", "/projects"),
+    list: () => req<Project[]>("GET", "/projects/"),
     create: (name: string, repo_url: string) =>
       req<Project>("POST", "/projects/", { name, repo_url }),
     deploy: (id: string) =>
