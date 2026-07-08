@@ -9,6 +9,7 @@ from apps.api.src.routes.deployments import router as deployments_router
 from apps.api.src.routes.logs import router as logs_router
 from apps.api.src.routes.webhook import router as webhook_router
 from apps.api.src.services.webhook_adapter import DBWebhookAdapter
+from apps.api.src.lib.log_store import init_loop
 
 def _cleanup_stuck_builds():
     db = SessionLocal()
