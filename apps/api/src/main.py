@@ -36,7 +36,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Parsley",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False
 )
 
 
