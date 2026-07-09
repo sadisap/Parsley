@@ -5,7 +5,7 @@
 import paramiko
 import os
 
-from apps.networking.src.health import wait_for_health
+# from apps.networking.src.health import wait_for_health
 
 
 def _get_ssh_client() -> paramiko.SSHClient:
@@ -88,6 +88,25 @@ def stop_container(client: paramiko.SSHClient, container_name: str) -> None:
     _run_remote(client, f"docker stop {container_name}", ignore_errors=True)
     _run_remote(client, f"docker rm {container_name}", ignore_errors=True)
 
+def _check_health_remote(client: paramiko.SSHClient, container_name: str, port: int, timeout: int = 10) -> bool:
+    import time
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        out = _run_remote(
+            client,
+            f"docker inspect -f '{{{{.State.Running}}}}' {container_name}",
+            ignore_errors=True,
+        )
+        if "true" in out.lower():
+            time.sleep(3)
+            out2 = _run_remote(
+                client,
+                f"docker inspect -f '{{{{.State.Running}}}}' {container_name}",
+                ignore_errors=True,
+            )
+            return "true" in out2.lower()
+        time.sleep(0.5)
+    return False
 
 def redeploy(
     image: str,
@@ -141,12 +160,14 @@ def redeploy(
             raise
 
         # wait for health check
-        healthy = wait_for_health(
-            host=container_name,
-            # host=os.getenv("VPS_HOST"),
-            port=port,
-            timeout=10,
-        )
+        # healthy = wait_for_health(
+        #     host=container_name,
+        #     # host=os.getenv("VPS_HOST"),
+        #     port=port,
+        #     timeout=10,
+        # )
+
+        healthy = _check_health_remote(client, container_name, port)
 
         if healthy:
             if had_previous:
@@ -165,6 +186,7 @@ def redeploy(
 
     finally:
         client.close()
+
 
 
 def get_status(container_name: str) -> str | None:
