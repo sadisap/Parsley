@@ -22,7 +22,8 @@ Push to `main` and the GitHub webhook triggers the same pipeline again. Also inc
 ## Architecture
 
 Parsley is built across four modules that run in sequence:
-<img width="2720" height="1520" alt="parsley_architecture" src="https://github.com/user-attachments/assets/8e911096-08c8-44c5-aeaf-f0b88859c6d6" />
+
+<img width="500" height="300" alt="parsley_architecture" src="https://github.com/user-attachments/assets/8e911096-08c8-44c5-aeaf-f0b88859c6d6" />
 
 - **Build Engine** — clones the repo, detects the stack, builds and pushes the Docker image
 - **Deployment Agent** — pulls the image, runs the container, handles restarts and redeploys
@@ -81,7 +82,10 @@ Building in public. Issues and pull requests are welcome.
 
 ## Contributors
 
-Sadkishya - https://github.com/sadisap
-Shravani - https://github.com/Shravaniiii
+- Sadkishya - https://github.com/sadisap
+- Shravani - https://github.com/Shravaniiii
 
-!--!
+## 
+
+<img width="417" height="421" align="center" alt="image" src="https://github.com/user-attachments/assets/cf3a78e6-30bc-4072-9a76-76a6985c33df" />
+
