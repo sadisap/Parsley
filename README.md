@@ -82,7 +82,7 @@ Building in public. Issues and pull requests are welcome.
 
 ## Contributors
 
-- Sadkishya - https://github.com/sadisap
+- Sadikshya - https://github.com/sadisap
 - Shravani - https://github.com/Shravaniiii
 
 ## 
